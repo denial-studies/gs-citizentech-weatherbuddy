@@ -1,0 +1,11 @@
+**/target
+.mvn/maven.config
+.cobalt-session
+.git
+.gitignore
+.idea
+.vscode
+*.bat
+*.sh
+*.md
+
