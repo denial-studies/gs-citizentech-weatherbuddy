@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Operacional | Weather Buddy</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="centered-container">
+    <div style="border-radius: 26px; overflow: hidden; box-shadow: 0 12px 32px rgba(10, 69, 149, 0.14); background: #FFFFFF;">
+        <div class="wave-stage" style="margin-top: 0; border-radius: 0;">
+            <div class="m3-alert-card" style="margin-bottom: 1rem;">
+                <div class="m3-alert-header">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8C2D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    <div>
+                        <div class="m3-alert-overline">ÁREA RESTRITA</div>
+                        <h1 class="m3-alert-title">Painel da Defesa Civil</h1>
+                    </div>
+                </div>
+                <p class="m3-alert-body" style="margin-bottom: 0;">
+                    Entre com suas credenciais operacionais para gerenciar regiões, parear o WhatsApp e confirmar alertas.
+                </p>
+            </div>
+
+            <section class="card" style="margin-bottom: 0;">
+                <div th:if="${param.error}" class="alert alert-danger">
+                    Credenciais inválidas ou usuário inativo. Verifique seu e-mail e senha.
+                </div>
+
+                <div th:if="${param.logout}" class="alert alert-success">
+                    Você saiu do painel operacional com segurança.
+                </div>
+
+                <form th:action="@{/login}" method="post">
+                    <div class="form-group">
+                        <label for="username" class="form-label">E-mail Operacional</label>
+                        <input type="email"
+                               id="username"
+                               name="username"
+                               class="form-control"
+                               placeholder="operador@hidroalerta.com.br"
+                               required
+                               autofocus>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Senha</label>
+                        <input type="password"
+                               id="password"
+                               name="password"
+                               class="form-control"
+                               placeholder="Digite sua senha"
+                               required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Entrar no Sistema
+                    </button>
+                </form>
+
+                <div style="margin-top: 1.15rem; text-align: center;">
+                    <a th:href="@{/}" style="color: #0B57D0; font-weight: 700; font-size: 0.88rem; text-decoration: none;">
+                        &larr; Voltar para a Página Inicial
+                    </a>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

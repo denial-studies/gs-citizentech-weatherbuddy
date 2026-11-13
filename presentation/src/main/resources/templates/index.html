@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Buddy — Prevenção de Enchentes &amp; Alertas</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="main-container">
+    <div class="m3-split-layout">
+        <!-- COLUNA 1: Visual Material 3 das Ondas, Indicadores, Risco de Alagamentos e Segurança -->
+        <div class="wave-stage" style="margin-bottom: 0;">
+            <div style="text-align: center;">
+                <span class="stage-pill-badge">Monitoramento Climático Preventivo</span>
+            </div>
+
+            <!-- 2 Cards Flutuantes: "Na região" e "Próximas 3h" -->
+            <div class="floating-metrics-grid">
+                <div class="metric-mini-card">
+                    <div class="metric-mini-top">
+                        <span>Na região</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2.2" stroke-linecap="round">
+                            <path d="M2 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+                            <path d="M2 13c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+                            <path d="M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+                        </svg>
+                    </div>
+                    <div class="metric-mini-value" th:text="${(#lists.isEmpty(regioes) ? 3 : #lists.size(regioes)) + ' pontos'}">3 pontos</div>
+                </div>
+
+                <div class="metric-mini-card">
+                    <div class="metric-mini-top">
+                        <span>Próximas 3h</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/>
+                            <path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/>
+                        </svg>
+                    </div>
+                    <div class="metric-mini-value">48 mm</div>
+                </div>
+            </div>
+
+            <!-- Ondas em camadas (SVG) -->
+            <svg class="wave-divider-svg" viewBox="0 0 400 50" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M0,20 C90,5 170,38 270,18 C330,6 370,16 400,22 L400,50 L0,50 Z" fill="rgba(92, 164, 234, 0.55)"></path>
+                <path d="M0,32 C120,12 220,45 330,24 C365,17 385,22 400,28 L400,50 L0,50 Z" fill="#0A4595"></path>
+            </svg>
+
+            <!-- Card Tonal Material 3: CHUVAS FORTES / Risco de alagamentos -->
+            <section class="m3-alert-card">
+                <div class="m3-alert-header">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8C2D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <div>
+                        <div class="m3-alert-overline">CHUVAS FORTES</div>
+                        <h2 class="m3-alert-title">Risco de alagamentos</h2>
+                    </div>
+                </div>
+                <p class="m3-alert-body">
+                    Evite vias alagadas e acompanhe as atualizações do seu bairro diretamente no seu WhatsApp.
+                </p>
+                <div class="m3-alert-footer">
+                    <span>Telemetria Open-Meteo • Time Hidro-Alerta</span>
+                    <a href="#cadastro" style="color: #8C2D2D; text-decoration: none; font-size: 1.15rem; font-weight: 800;">&rarr;</a>
+                </div>
+            </section>
+
+            <!-- Card de Segurança: Sua segurança vem primeiro / Defesa Civil 199 -->
+            <section id="cuidados" class="m3-safety-card">
+                <div class="m3-safety-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                    <span>Sua segurança vem primeiro</span>
+                </div>
+                <a href="tel:199" class="m3-emergency-pill">
+                    <small>Em caso de emergência</small>
+                    <strong>Defesa Civil 199</strong>
+                </a>
+            </section>
+        </div>
+
+        <!-- COLUNA 2: Cadastro Comunitário no WhatsApp + Botão Área Restrita -->
+        <section id="cadastro" class="card card-highlight" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                <span class="tag tag-blue">Alerta no WhatsApp</span>
+                <a th:href="@{/login}" class="btn btn-sm btn-outline-light">
+                    Área Restrita &rarr;
+                </a>
+            </div>
+
+            <h1 class="card-title" style="font-size: 1.38rem;">Receba alertas preventivos no seu celular</h1>
+            <p class="card-subtitle">
+                Cadastre seu número gratuitamente na plataforma <strong>Weather Buddy</strong> para receber avisos em caso de chuvas fortes e risco de alagamento no seu bairro.
+            </p>
+
+            <div th:if="${sucessoMensagem}" class="alert alert-success" th:text="${sucessoMensagem}"></div>
+            <div th:if="${erroMensagem}" class="alert alert-danger" th:text="${erroMensagem}"></div>
+
+            <form th:action="@{/inscricao}" th:object="${inscritoForm}" method="post">
+                <div class="form-group">
+                    <label for="nomeInscrito" class="form-label">Nome Completo</label>
+                    <input type="text"
+                           id="nomeInscrito"
+                           th:field="*{nomeInscrito}"
+                           class="form-control"
+                           placeholder="Ex.: Maria da Silva"
+                           maxlength="120"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone" class="form-label">WhatsApp / Celular (com DDD)</label>
+                    <input type="tel"
+                           id="telefone"
+                           th:field="*{telefone}"
+                           class="form-control"
+                           placeholder="Ex.: (11) 98765-4321"
+                           maxlength="20"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="idRegiao" class="form-label">Região / Bairro Monitorado</label>
+                    <select id="idRegiao" th:field="*{idRegiao}" class="form-control" required>
+                        <option value="">Selecione a sua região ou bairro...</option>
+                        <option th:each="regiao : ${regioes}"
+                                th:value="${regiao.idRegiao}"
+                                th:text="${regiao.nomeRegiao + ' — ' + regiao.bairro + ' (Risco ' + regiao.nivelRisco + ')'}">
+                        </option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    Cadastrar Meu Número
+                </button>
+            </form>
+        </section>
+    </div>
+</main>
+
+</body>
+</html>

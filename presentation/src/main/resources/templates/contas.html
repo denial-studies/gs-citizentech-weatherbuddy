@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Contas do Sistema | Weather Buddy — Time Hidro-Alerta</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="main-container">
+    <div th:replace="~{fragments/navbar :: painelMenu}"></div>
+
+    <!-- HERO WAVE STAGE MATERIAL 3 -->
+    <div class="wave-stage">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.85rem;">
+            <span class="stage-pill-badge" style="margin-bottom: 0;">3. Contas Cadastradas no Sistema</span>
+            <span class="stage-pill-badge" style="margin-bottom: 0;" th:text="${'Operador: ' + usuarioLogado}">Operador</span>
+        </div>
+
+        <div class="floating-metrics-grid">
+            <div class="metric-mini-card">
+                <div class="metric-mini-top">
+                    <span>Operadores registrados</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <div class="metric-mini-value" th:text="${#lists.size(contas) + ' contas'}">1 conta</div>
+            </div>
+
+            <div class="metric-mini-card">
+                <div class="metric-mini-top">
+                    <span>Acesso operacional</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <div class="metric-mini-value">Defesa Civil</div>
+            </div>
+        </div>
+
+        <svg class="wave-divider-svg" viewBox="0 0 400 50" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0,20 C90,5 170,38 270,18 C330,6 370,16 400,22 L400,50 L0,50 Z" fill="rgba(92, 164, 234, 0.55)"></path>
+            <path d="M0,32 C120,12 220,45 330,24 C365,17 385,22 400,28 L400,50 L0,50 Z" fill="#0A4595"></path>
+        </svg>
+
+        <div class="m3-alert-card" style="margin-bottom: 0;">
+            <div class="m3-alert-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8C2D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <div>
+                    <div class="m3-alert-overline">CONTROLE DE ACESSO</div>
+                    <h1 class="m3-alert-title">Responsáveis &amp; Operadores</h1>
+                </div>
+            </div>
+            <p class="m3-alert-body" style="margin-bottom: 0;">
+                Administre as contas autorizadas a acessar a Área Restrita e confirmar o disparo de alertas pluviométricos.
+            </p>
+        </div>
+    </div>
+
+    <!-- Alertas de Feedback -->
+    <div th:if="${sucessoPainel}" class="alert alert-success" th:text="${sucessoPainel}"></div>
+    <div th:if="${erroPainel}" class="alert alert-danger" th:text="${erroPainel}"></div>
+
+    <!-- Card de Edição de Conta -->
+    <section th:if="${contaEmEdicao != null}" class="card card-highlight" style="border-color: #0284C7; background-color: #F0F9FF;">
+        <h2 class="card-title">Alterar Conta do Sistema (ID #<span th:text="${contaEmEdicao.idResponsavel}">1</span>)</h2>
+        <p class="card-subtitle">Altere os dados da conta ou informe uma nova senha caso deseje redefini-la:</p>
+
+        <form th:action="@{/dashboard/contas/{id}/editar(id=${contaEmEdicao.idResponsavel})}" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nome do Responsável</label>
+                    <input type="text" name="nomeResponsavel" class="form-control" th:value="${contaEmEdicao.nomeResponsavel}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">E-mail de Login</label>
+                    <input type="email" name="emailLogin" class="form-control" th:value="${contaEmEdicao.emailLogin}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cargo / Função</label>
+                    <input type="text" name="cargo" class="form-control" th:value="${contaEmEdicao.cargo}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select name="ativo" class="form-control" required>
+                        <option value="S" th:selected="${contaEmEdicao.ativo == 'S'}">ATIVO (S)</option>
+                        <option value="N" th:selected="${contaEmEdicao.ativo == 'N'}">INATIVO (N)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nova Senha (deixe em branco para manter a atual)</label>
+                    <input type="password" name="novaSenha" class="form-control" placeholder="Opcional: digite para trocar a senha">
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações da Conta</button>
+                <a th:href="@{/dashboard/contas}" class="btn btn-sm" style="background: #E2E8F0; color: #0F172A;">Cancelar</a>
+            </div>
+        </form>
+    </section>
+
+    <!-- Card para Criar Nova Conta -->
+    <section class="card">
+        <h2 class="card-title">Cadastrar Nova Conta de Operador</h2>
+        <p class="card-subtitle">Crie um novo usuário responsável para acessar o sistema e confirmar disparos de alertas.</p>
+
+        <form th:action="@{/dashboard/contas/criar}" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" name="nomeResponsavel" class="form-control" placeholder="Ex.: Carlos Coordenador" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">E-mail de Login</label>
+                    <input type="email" name="emailLogin" class="form-control" placeholder="Ex.: carlos@hidroalerta.com.br" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cargo / Função</label>
+                    <input type="text" name="cargo" class="form-control" placeholder="Ex.: Agente da Defesa Civil" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha de Acesso</label>
+                    <input type="password" name="senha" class="form-control" placeholder="Mínimo de 6 caracteres" minlength="4" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">+ Criar Conta no Sistema</button>
+        </form>
+    </section>
+
+    <!-- Lista de Contas Cadastradas -->
+    <section class="card">
+        <h2 class="card-title">Contas Cadastradas (tb_responsavel)</h2>
+        <p class="card-subtitle">Usuários administrativos registrados no banco de dados.</p>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>E-mail de Login</th>
+                    <th>Cargo</th>
+                    <th>Data de Cadastro</th>
+                    <th>Status</th>
+                    <th>Gerenciar Conta</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(contas)}">
+                    <td colspan="7" style="text-align: center; color: #64748B;">Nenhuma conta cadastrada.</td>
+                </tr>
+                <tr th:each="conta : ${contas}">
+                    <td th:text="${conta.idResponsavel}">1</td>
+                    <td><strong th:text="${conta.nomeResponsavel}">Operador Defesa Civil</strong></td>
+                    <td th:text="${conta.emailLogin}">operador@hidroalerta.com.br</td>
+                    <td th:text="${conta.cargo}">Coordenador Comunitário</td>
+                    <td th:text="${conta.dataCadastro != null ? #temporals.format(conta.dataCadastro, 'dd/MM/yyyy') : '-'}">12/11/2026</td>
+                    <td>
+                        <span th:if="${conta.ativo == 'S'}" class="tag tag-green">ATIVO (S)</span>
+                        <span th:unless="${conta.ativo == 'S'}" class="tag tag-red">INATIVO (N)</span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                            <a th:href="@{/dashboard/contas(editarId=${conta.idResponsavel})}"
+                               class="btn btn-sm" style="background: #E0F2FE; color: #0369A1;">
+                                Alterar
+                            </a>
+
+                            <form th:action="@{/dashboard/contas/{id}/status(id=${conta.idResponsavel})}" method="post" style="margin: 0;">
+                                <button type="submit" class="btn btn-sm"
+                                        th:style="${conta.ativo == 'S' ? 'background: #F1F5F9; color: #475569;' : 'background: #DCFCE7; color: #065F46;'}"
+                                        th:text="${conta.ativo == 'S' ? 'Inativar' : 'Ativar'}">
+                                    Inativar
+                                </button>
+                            </form>
+
+                            <form th:action="@{/dashboard/contas/{id}/deletar(id=${conta.idResponsavel})}" method="post" style="margin: 0;"
+                                  onsubmit="return confirm('Deseja realmente remover esta conta do sistema?');">
+                                <button type="submit" class="btn btn-sm btn-danger-outline">Excluir</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <p>Weather Buddy (Time Hidro-Alerta) &bull; Gestão de Contas Administrativas</p>
+</footer>
+
+</body>
+</html>
+

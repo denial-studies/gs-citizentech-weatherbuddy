@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: weatherbuddy
+
+  datasource:
+    url: jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
+    username: rm000000
+    password: senha
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8080
+
+# Habilita dados mockados (true, on ou 1)
+db-env: true

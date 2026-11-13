@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testar Envios &amp; Confirmar Alertas | Weather Buddy — Time Hidro-Alerta</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="main-container">
+    <div th:replace="~{fragments/navbar :: painelMenu}"></div>
+
+    <!-- HERO WAVE STAGE MATERIAL 3 -->
+    <div class="wave-stage">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.85rem;">
+            <span class="stage-pill-badge" style="margin-bottom: 0;">4. Central WhatsApp &amp; Confirmação de Envios</span>
+            <span class="stage-pill-badge" style="margin-bottom: 0;" th:text="${'Status WhatsApp: ' + whatsappStatus}">DESCONECTADO</span>
+        </div>
+
+        <div class="floating-metrics-grid">
+            <div class="metric-mini-card">
+                <div class="metric-mini-top">
+                    <span>Alertas pendentes</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <div class="metric-mini-value" th:text="${#lists.size(alertasPendentes) + ' regiões'}">0 regiões</div>
+            </div>
+
+            <div class="metric-mini-card">
+                <div class="metric-mini-top">
+                    <span>Disparos realizados</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </div>
+                <div class="metric-mini-value" th:text="${#lists.size(historicoMensagens)}">0</div>
+            </div>
+        </div>
+
+        <svg class="wave-divider-svg" viewBox="0 0 400 50" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0,20 C90,5 170,38 270,18 C330,6 370,16 400,22 L400,50 L0,50 Z" fill="rgba(92, 164, 234, 0.55)"></path>
+            <path d="M0,32 C120,12 220,45 330,24 C365,17 385,22 400,28 L400,50 L0,50 Z" fill="#0A4595"></path>
+        </svg>
+
+        <div class="m3-alert-card" style="margin-bottom: 0;">
+            <div class="m3-alert-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8C2D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                <div>
+                    <div class="m3-alert-overline">CONFIRMAÇÃO HUMANA OBRIGATÓRIA</div>
+                    <h1 class="m3-alert-title">Pareamento Temporário &amp; Disparo de Alertas</h1>
+                </div>
+            </div>
+            <p class="m3-alert-body" style="margin-bottom: 0;">
+                Conecte um número de WhatsApp para esta execução (nada fica salvo no projeto), teste envios individuais ou confirme os alertas de clima ruim.
+            </p>
+        </div>
+    </div>
+
+    <!-- Alertas de Feedback -->
+    <div th:if="${sucessoPainel}" class="alert alert-success" th:text="${sucessoPainel}"></div>
+    <div th:if="${alertaPainel}" class="alert alert-warning" th:text="${alertaPainel}"></div>
+    <div th:if="${erroPainel}" class="alert alert-danger" th:text="${erroPainel}"></div>
+
+    <!-- SEÇÃO 0: CONEXÃO WHATSAPP (COBALT MODO LINKED — SESSÃO TEMPORÁRIA EM MEMÓRIA) -->
+    <section class="card" th:style="${whatsappConectado ? 'border: 2px solid #10B981; background-color: #F0FDF4;' : 'border: 2px solid #0B57D0; background-color: #F4F7FB;'}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 class="card-title" style="margin-bottom: 0.25rem;">
+                    WhatsApp da Execução Atual (Não Salvo no Projeto)
+                    <span class="tag"
+                          th:text="${whatsappStatus}"
+                          th:style="${whatsappConectado ? 'background-color: #10B981; color: #FFFFFF; margin-left: 0.5rem;' : (whatsappStatus == 'ERRO' ? 'background-color: #EF4444; color: #FFFFFF; margin-left: 0.5rem;' : 'background-color: #F59E0B; color: #FFFFFF; margin-left: 0.5rem;')}">
+                        DESCONECTADO
+                    </span>
+                </h2>
+                <p style="color: #475569; font-size: 0.88rem; margin: 0;">
+                    <span th:if="${whatsappConectado}">
+                        Sessão temporária ativa em memória! Número conectado nesta execução:
+                        <strong th:text="${whatsappNumero}">+55...</strong> (ao reiniciar o backend, será solicitado um novo número).
+                    </span>
+                    <span th:if="${!whatsappConectado}">
+                        Nenhum número fica salvo no disco ou no projeto. Sempre que o backend iniciar, informe abaixo o número de WhatsApp que deseja usar nesta sessão.
+                    </span>
+                </p>
+                <p th:if="${whatsappErro}" style="color: #B91C1C; font-size: 0.85rem; margin-top: 0.4rem;">
+                    <strong>Detalhe do erro:</strong> <span th:text="${whatsappErro}"></span>
+                </p>
+            </div>
+
+            <div th:if="${whatsappConectado or whatsappStatus == 'AGUARDANDO_QR' or whatsappStatus == 'AGUARDANDO_CODIGO' or whatsappStatus == 'CONECTANDO'}"
+                 style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <form th:action="@{/dashboard/envios/whatsapp/desconectar}" method="post" style="margin: 0;">
+                    <button type="submit" class="btn btn-sm btn-danger-outline">
+                        Desconectar / Informar Outro Número
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Formulário para informar um número sempre novo ao iniciar -->
+        <form th:if="${!whatsappConectado and whatsappStatus != 'AGUARDANDO_QR' and whatsappStatus != 'AGUARDANDO_CODIGO' and whatsappStatus != 'CONECTANDO'}"
+              th:action="@{/dashboard/envios/whatsapp/conectar}" method="post"
+              style="margin-top: 1rem; background: #FFFFFF; padding: 1.1rem; border-radius: 18px; border: 1px solid #E2E8F0;">
+            <div class="form-grid" style="align-items: end;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Novo Número do WhatsApp (com DDD) *</label>
+                    <input type="tel" name="telefoneWhatsapp" class="form-control"
+                           placeholder="Ex.: (11) 98765-4321" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Modo de Pareamento</label>
+                    <select name="modo" class="form-control">
+                        <option value="PAIRING">Código de Pareamento por Número (8 dígitos)</option>
+                        <option value="QR">QR Code na Tela</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Conectar Este Número Agora
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Exibição do Código de Pareamento de 8 dígitos -->
+        <div th:if="${whatsappCodigoPareamento != null and !whatsappConectado}"
+             style="margin-top: 1rem; text-align: center; background: #FFFFFF; padding: 1.25rem; border-radius: 18px; border: 2px solid #0B57D0;">
+            <div style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: #0B57D0;">
+                Código de Pareamento para <span th:text="${whatsappNumero}">+55...</span>
+            </div>
+            <div style="font-size: 2.1rem; font-weight: 800; letter-spacing: 0.18em; color: #0F172A; margin: 0.5rem 0;"
+                 th:text="${whatsappCodigoPareamento}">
+                ABCD-1234
+            </div>
+            <p style="font-size: 0.86rem; color: #475569; margin: 0;">
+                No seu celular, abra <strong>WhatsApp &rarr; Dispositivos conectados &rarr; Conectar dispositivo &rarr; Conectar com número de telefone</strong> e digite o código acima.
+            </p>
+        </div>
+
+        <!-- Exibição do QR Code em memória -->
+        <div th:if="${whatsappTemQr and !whatsappConectado}"
+             style="margin-top: 1rem; text-align: center; background: #FFFFFF; padding: 1.25rem; border-radius: 18px; border: 1px solid #BAE6FD;">
+            <p style="font-size: 0.88rem; font-weight: 700; color: #0B57D0; margin-bottom: 0.65rem;">
+                QR Code para o número <span th:text="${whatsappNumero}">+55...</span>
+            </p>
+            <img th:src="@{/dashboard/envios/whatsapp/qr(t=${#dates.createNow().getTime()})}"
+                 alt="QR Code WhatsApp"
+                 style="width: 240px; height: 240px; border: 1px solid #CBD5E1; border-radius: 14px; padding: 6px; background: #FFFFFF;">
+            <p style="font-size: 0.84rem; color: #64748B; margin-top: 0.5rem; margin-bottom: 0;">
+                Escaneie no WhatsApp do celular. A página atualiza automaticamente a cada 4 segundos.
+            </p>
+        </div>
+    </section>
+
+    <script th:if="${whatsappStatus == 'CONECTANDO' or whatsappStatus == 'AGUARDANDO_QR' or whatsappStatus == 'AGUARDANDO_CODIGO'}">
+        setTimeout(function () {
+            window.location.reload();
+        }, 4000);
+    </script>
+
+    <!-- Comprovante visual do último teste individual -->
+    <section th:if="${ultimoTesteNumero}" class="card" style="border: 2px solid #10B981; background-color: #ECFDF5;">
+        <h2 class="card-title" style="color: #065F46;">Comprovante de Teste de Envio (Simulação Mensageria)</h2>
+        <p style="color: #047857; font-size: 0.95rem; margin-bottom: 0.5rem;">
+            <strong>Número Testado:</strong> <span th:text="${ultimoTesteNumero}">(11) 98765-4321</span> &bull;
+            <strong>Destinatário:</strong> <span th:text="${ultimoTesteNome}">João da Silva</span>
+        </p>
+        <p style="color: #065F46; background: #FFFFFF; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #6EE7B7;">
+            <strong>Mensagem Despachada:</strong> <span th:text="${ultimoTesteMensagem}">Mensagem de teste</span>
+        </p>
+    </section>
+
+    <!-- SEÇÃO 1: CONFIRMAR ENVIO QUANDO A API OPEN-METEO AFIRMAR QUE O CLIMA ESTÁ RUIM -->
+    <section class="card" style="border: 2px solid #F59E0B;">
+        <h2 class="card-title" style="color: #92400E;">1. Confirmar Envio de Alerta (Clima Ruim Detectado)</h2>
+        <p class="card-subtitle">
+            Quando a Open-Meteo (ou simulação) identifica chuva acima do limite de segurança da região, o alerta aparece abaixo.
+            Revise o texto e clique em <strong>"Confirmar e Enviar Alerta"</strong> para disparar aos moradores cadastrados na região.
+        </p>
+
+        <div th:if="${#lists.isEmpty(alertasPendentes)}" style="padding: 1.25rem; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; color: #475569;">
+            Nenhuma região está com alerta climático pendente de confirmação no momento.
+            Você pode consultar a Open-Meteo ou clicar em <strong>"Simular Clima Ruim"</strong> na aba <a th:href="@{/dashboard}" style="color: #0284C7; font-weight: 600;">1. Monitoramento &amp; Regiões</a>.
+        </div>
+
+        <div th:each="pend : ${alertasPendentes}" style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div>
+                    <strong style="font-size: 1.1rem; color: #78350F;" th:text="${pend.nomeRegiao + ' — ' + pend.bairro}">Centro Franco da Rocha</strong>
+                    <span class="tag" th:classappend="${'tag-' + pend.severidadeSugerida}" th:text="${pend.severidadeSugerida}" style="margin-left: 0.5rem;">ALERTA</span>
+                </div>
+                <div style="font-size: 0.9rem; color: #92400E;">
+                    Chuva medida: <strong th:text="${pend.precipitacaoMm + ' mm'}">36.50 mm</strong>
+                    (Limite: <span th:text="${pend.limiteChuvaMm + ' mm'}">30.00 mm</span>) &bull;
+                    Moradores ativos: <strong th:text="${pend.totalMoradoresAtivos}">1</strong>
+                </div>
+            </div>
+
+            <form th:action="@{/dashboard/envios/confirmar/{id}(id=${pend.idRegiao})}" method="post">
+                <div class="form-grid">
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label class="form-label">Severidade do Alerta</label>
+                        <select name="severidade" class="form-control">
+                            <option th:each="sev : ${severidades}"
+                                    th:value="${sev}"
+                                    th:selected="${sev == pend.severidadeSugerida}"
+                                    th:text="${sev}">ALERTA</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2; margin-bottom: 0.75rem;">
+                        <label class="form-label">Mensagem que será enviada aos moradores da região</label>
+                        <input type="text" name="mensagemCustomizada" class="form-control" th:value="${pend.mensagemSugerida}" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm" style="background-color: #D97706;">
+                    Confirmar e Enviar Alerta para <span th:text="${pend.nomeRegiao}">Região</span>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- SEÇÃO 2: TESTAR ENVIO PARA UM NÚMERO ESPECÍFICO -->
+    <section class="card card-highlight">
+        <h2 class="card-title">2. Testar Envio para um Número Específico</h2>
+        <p class="card-subtitle">
+            Informe qualquer número de telefone específico (ou escolha um número já cadastrado abaixo) para testar se o disparo de mensagem está funcionando.
+            <em>(Simulação via console/log — sem integração WhatsApp no momento)</em>.
+        </p>
+
+        <!-- Seletor rápido opcional para preencher com um número cadastrado -->
+        <div class="form-group" style="background: #F8FAFC; padding: 1rem; border-radius: 8px; border: 1px solid #E2E8F0; margin-bottom: 1.25rem;">
+            <label class="form-label">Preencher rapidamente com um número cadastrado (opcional):</label>
+            <select id="seletorInscrito" class="form-control" onchange="preencherNumeroCadastrado(this)">
+                <option value="">-- Digite um número livre abaixo ou escolha um morador cadastrado aqui --</option>
+                <option th:each="ins : ${inscritos}"
+                        th:value="${ins.telefone}"
+                        th:data-nome="${ins.nomeInscrito}"
+                        th:data-regiao="${ins.idRegiao}"
+                        th:text="${ins.nomeInscrito + ' — ' + ins.telefone + ' (' + ins.nomeRegiao + ')'}">
+                </option>
+            </select>
+        </div>
+
+        <form th:action="@{/dashboard/envios/testar-numero}" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Número de Telefone para Teste *</label>
+                    <input type="text" id="inputTelefoneTeste" name="telefone" class="form-control"
+                           th:value="${telefoneTeste}" placeholder="Ex.: (11) 98765-4321" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nome do Destinatário</label>
+                    <input type="text" id="inputNomeTeste" name="nomeDestinatario" class="form-control"
+                           th:value="${nomeTeste}" placeholder="Ex.: João da Silva">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Região de Referência</label>
+                    <select id="selectRegiaoTeste" name="idRegiao" class="form-control">
+                        <option value="">Teste Geral (Sem região específica)</option>
+                        <option th:each="reg : ${regioes}"
+                                th:value="${reg.idRegiao}"
+                                th:selected="${idRegiaoTeste != null and reg.idRegiao == idRegiaoTeste}"
+                                th:text="${reg.nomeRegiao + ' (' + reg.bairro + ')'}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Mensagem de Teste</label>
+                <input type="text" name="mensagem" class="form-control"
+                       value="[TESTE WEATHER BUDDY] Verificação de envio de alerta preventivo para o seu número.">
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Testar Envio para Este Número
+            </button>
+        </form>
+    </section>
+
+    <!-- SEÇÃO 3: HISTÓRICO DE MENSAGENS ENVIADAS (tb_historico_mensagem) -->
+    <section class="card">
+        <h2 class="card-title">3. Histórico de Alertas Confirmados e Enviados (tb_historico_mensagem)</h2>
+        <p class="card-subtitle">
+            Registro de todos os disparos de alerta que foram confirmados pelos responsáveis.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Data / Hora</th>
+                    <th>Região / Bairro</th>
+                    <th>Responsável que Confirmou</th>
+                    <th>Severidade</th>
+                    <th>Conteúdo da Mensagem</th>
+                    <th>Envios com Sucesso</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(historicoMensagens)}">
+                    <td colspan="7" style="text-align: center; color: #64748B;">Nenhum alerta confirmado até o momento.</td>
+                </tr>
+                <tr th:each="msg : ${historicoMensagens}">
+                    <td th:text="${msg.idMensagem}">1</td>
+                    <td th:text="${msg.dataEnvio != null ? #temporals.format(msg.dataEnvio, 'dd/MM/yyyy HH:mm:ss') : '-'}">12/11/2026 14:30</td>
+                    <td>
+                        <strong th:text="${msg.nomeRegiao}">Jardim Pantanal</strong>
+                        <div style="font-size: 0.8rem; color: #64748B;" th:text="${msg.bairroRegiao}">São Miguel</div>
+                    </td>
+                    <td th:text="${msg.nomeResponsavel != null ? msg.nomeResponsavel : 'ID ' + msg.idResponsavel}">Operador Defesa Civil</td>
+                    <td>
+                        <span class="tag"
+                              th:classappend="${'tag-' + msg.severidade}"
+                              th:text="${msg.severidade}">ALERTA</span>
+                    </td>
+                    <td th:text="${msg.conteudo}">Mensagem enviada</td>
+                    <td>
+                        <span class="tag tag-blue" th:text="${msg.quantidadeEnviosSucesso + ' número(s)'}">2 número(s)</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <p>Weather Buddy (Time Hidro-Alerta) &bull; Central de Confirmação e Teste de Envios</p>
+</footer>
+
+<script>
+    function preencherNumeroCadastrado(selectEl) {
+        var option = selectEl.options[selectEl.selectedIndex];
+        if (!option || !option.value) return;
+        document.getElementById('inputTelefoneTeste').value = option.value;
+        document.getElementById('inputNomeTeste').value = option.getAttribute('data-nome') || '';
+        var idRegiao = option.getAttribute('data-regiao');
+        if (idRegiao) {
+            document.getElementById('selectRegiaoTeste').value = idRegiao;
+        }
+    }
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento Climático | Weather Buddy — Área Restrita</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="main-container">
+    <div th:replace="~{fragments/navbar :: painelMenu}"></div>
+
+    <!-- Alertas de Feedback -->
+    <div th:if="${sucessoPainel}" class="alert alert-success" th:text="${sucessoPainel}"></div>
+    <div th:if="${alertaPainel}" class="alert alert-warning" th:text="${alertaPainel}"></div>
+    <div th:if="${erroPainel}" class="alert alert-danger" th:text="${erroPainel}"></div>
+
+    <!-- HERO STAGE MATERIAL 3 (Sem Mapa — Adaptável Mobile e Computador) -->
+    <div class="wave-stage">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.85rem;">
+            <span class="stage-pill-badge" style="margin-bottom: 0;">1. Painel de Monitoramento Climático</span>
+            <span class="stage-pill-badge" style="margin-bottom: 0;" th:text="${'Operador: ' + usuarioLogado}">Operador</span>
+        </div>
+
+        <!-- 4 KPIs Flutuantes (2x2 no celular, 4 colunas no computador) -->
+        <div class="floating-metrics-grid cols-4">
+            <div class="metric-mini-card">
+                <div class="metric-mini-top">
+                    <span>Na região</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2.2" stroke-linecap="round">
+                        <path d="M2 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+                        <path d="M2 13c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+                        <path d="M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>
+                    </svg>
+                </div>
+                <div class="metric-mini-value" th:text="${totalRegioes + ' pontos'}">3 pontos</div>
+            </div>
+
+            <div class="metric-mini-card">
+                <div class="metric-mini-top">
+                    <span>Última leitura</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/>
+                        <path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/>
+                    </svg>
+                </div>
+                <div class="metric-mini-value"
+                     th:text="${!#lists.isEmpty(historicoChuvas) ? historicoChuvas[0].precipitacaoMm + ' mm' : '0 mm'}">48 mm</div>
+            </div>
+
+            <div class="metric-mini-card">
+                <div class="metric-mini-top">
+                    <span>Números ativos</span>
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <div class="metric-mini-value" th:text="${totalInscritos}">0</div>
+            </div>
+
+            <div class="metric-mini-card">
+                <div class="metric-mini-top">
+                    <span>Alertas enviados</span>
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"/>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                </div>
+                <div class="metric-mini-value" th:text="${totalAlertas}">0</div>
+            </div>
+        </div>
+
+        <svg class="wave-divider-svg" viewBox="0 0 400 50" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0,20 C90,5 170,38 270,18 C330,6 370,16 400,22 L400,50 L0,50 Z" fill="rgba(92, 164, 234, 0.55)"></path>
+            <path d="M0,32 C120,12 220,45 330,24 C365,17 385,22 400,28 L400,50 L0,50 Z" fill="#0A4595"></path>
+        </svg>
+
+        <div class="m3-split-layout" style="align-items: stretch;">
+            <!-- Coluna Esquerda no Desktop: Card Tonal Material 3 (Alertas Pendentes ou Status) -->
+            <div>
+                <div th:if="${!#lists.isEmpty(alertasPendentes)}">
+                    <div th:each="pend : ${alertasPendentes}" class="m3-alert-card">
+                        <div class="m3-alert-header">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8C2D2D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            <div>
+                                <div class="m3-alert-overline" th:text="${'CHUVAS FORTES • ' + pend.severidadeSugerida}">CHUVAS FORTES</div>
+                                <h2 class="m3-alert-title" th:text="${'Risco de alagamentos — ' + pend.nomeRegiao}">Risco de alagamentos</h2>
+                            </div>
+                        </div>
+                        <p class="m3-alert-body" th:text="${pend.mensagemSugerida}">
+                            Evite vias alagadas e acompanhe as atualizações do seu bairro.
+                        </p>
+                        <div class="m3-alert-footer" style="flex-wrap: wrap; gap: 0.65rem;">
+                            <span th:text="${'Chuva: ' + pend.precipitacaoMm + ' mm (Limite: ' + pend.limiteChuvaMm + ' mm) • ' + pend.totalMoradoresAtivos + ' número(s)'}">
+                                Chuva: 48 mm
+                            </span>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <form th:action="@{/dashboard/enviar-regiao/{id}(id=${pend.idRegiao})}" method="post" style="margin: 0;"
+                                      onsubmit="return confirm('Confirma o envio deste alerta para TODOS os usuários ativos desta região?');">
+                                    <input type="hidden" name="severidade" th:value="${pend.severidadeSugerida}">
+                                    <input type="hidden" name="mensagemCustomizada" th:value="${pend.mensagemSugerida}">
+                                    <button type="submit" class="btn btn-sm" style="background-color: #8C2D2D; color: #FFFFFF;">
+                                        Confirmar e Enviar a Todos &rarr;
+                                    </button>
+                                </form>
+                                <a th:href="@{/dashboard/envios}" class="btn btn-sm" style="background: rgba(255,255,255,0.85); color: #5C1919;">
+                                    Revisar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(alertasPendentes)}" class="m3-alert-card" style="margin-bottom: 0; height: 100%;">
+                    <div class="m3-alert-header">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8C2D2D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <div>
+                            <div class="m3-alert-overline">MONITORAMENTO PREVENTIVO</div>
+                            <h2 class="m3-alert-title">Risco de alagamentos sob controle</h2>
+                        </div>
+                    </div>
+                    <p class="m3-alert-body">
+                        O sistema nunca envia alertas sozinho. Consulte a Open-Meteo abaixo ou simule chuva forte para acionar a confirmação manual.
+                    </p>
+                    <div class="m3-alert-footer">
+                        <span th:text="${'Alertas pendentes: ' + totalPendentes}">0 pendentes</span>
+                        <a href="#regioes-lista" style="color: #8C2D2D; text-decoration: none; font-size: 1.15rem; font-weight: 800;">&rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita no Desktop: Card de Segurança -->
+            <div class="m3-safety-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div class="m3-safety-title">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B57D0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="m9 12 2 2 4-4"/>
+                        </svg>
+                        <span>Sua segurança vem primeiro</span>
+                    </div>
+                    <p style="font-size: 0.86rem; color: #526077; margin-bottom: 0.9rem;">
+                        Todo disparo regional exige confirmação humana do operador responsável.
+                    </p>
+                </div>
+                <a href="tel:199" class="m3-emergency-pill">
+                    <small>Em caso de emergência</small>
+                    <strong>Defesa Civil 199</strong>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 1: Regiões de Risco e Envio para Todos com Confirmação -->
+    <section id="regioes-lista" class="card">
+        <h2 class="card-title">Regiões de Risco Monitoradas</h2>
+        <p class="card-subtitle">
+            Consulte a Open-Meteo, simule chuva forte ou envie um alerta confirmado diretamente para todos os moradores da região.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Região / Bairro</th>
+                    <th>Coordenadas</th>
+                    <th>Limiar</th>
+                    <th>Risco</th>
+                    <th>Ações &amp; Envio Regional</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(regioes)}">
+                    <td colspan="6" style="text-align: center; color: #64748B;">Nenhuma região cadastrada até o momento.</td>
+                </tr>
+                <tr th:each="regiao : ${regioes}">
+                    <td th:text="${regiao.idRegiao}">1</td>
+                    <td>
+                        <strong th:text="${regiao.nomeRegiao}">Jardim Pantanal</strong>
+                        <div style="font-size: 0.8rem; color: #64748B;" th:text="${regiao.bairro}">Várzea do Tietê</div>
+                    </td>
+                    <td style="font-size: 0.82rem;" th:text="${regiao.latitude + ', ' + regiao.longitude}">-23.489, -46.412</td>
+                    <td><strong th:text="${regiao.limiteChuvaMm + ' mm'}">25.00 mm</strong></td>
+                    <td>
+                        <span class="tag"
+                              th:classappend="${'tag-' + regiao.nivelRisco}"
+                              th:text="${regiao.nivelRisco}">CRITICO</span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; align-items: center;">
+                            <form th:action="@{/dashboard/monitorar/{id}(id=${regiao.idRegiao})}" method="post" style="margin: 0;">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    Consultar Open-Meteo
+                                </button>
+                            </form>
+                            <form th:action="@{/dashboard/simular/{id}(id=${regiao.idRegiao})}" method="post" style="margin: 0;">
+                                <button type="submit" class="btn btn-sm" style="background-color: #FEF3C7; color: #92400E;"
+                                        title="Simula leitura de chuva forte acima do limite">
+                                    Simular Clima Ruim
+                                </button>
+                            </form>
+                        </div>
+
+                        <details style="margin-top: 0.55rem; background: #FCEEEE; border-radius: 14px; padding: 0.6rem 0.85rem;">
+                            <summary style="cursor: pointer; font-weight: 700; font-size: 0.82rem; color: #8C2D2D;">
+                                Enviar Alerta a Todos da Região (Com Confirmação)
+                            </summary>
+                            <form th:action="@{/dashboard/enviar-regiao/{id}(id=${regiao.idRegiao})}" method="post"
+                                  style="margin-top: 0.65rem; display: flex; flex-direction: column; gap: 0.5rem;"
+                                  onsubmit="return confirm('Confirma o envio deste alerta para TODOS os usuários ativos cadastrados nesta região?');">
+                                <div>
+                                    <label class="form-label" style="font-size: 0.78rem; margin-bottom: 0.2rem;">Severidade</label>
+                                    <select name="severidade" class="form-control" style="padding: 0.4rem 0.65rem; font-size: 0.84rem; background: #FFFFFF;">
+                                        <option th:each="sev : ${severidades}"
+                                                th:value="${sev}"
+                                                th:selected="${sev.name() == 'ALERTA'}"
+                                                th:text="${sev}">ALERTA</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size: 0.78rem; margin-bottom: 0.2rem;">Mensagem para os moradores</label>
+                                    <input type="text" name="mensagemCustomizada" class="form-control"
+                                           style="padding: 0.4rem 0.65rem; font-size: 0.84rem; background: #FFFFFF;"
+                                           th:value="${'[ALERTA HIDRO-ALERTA] Atenção moradores de ' + regiao.nomeRegiao + ' (' + regiao.bairro + '): risco de alagamento na região. Redobre a atenção.'}"
+                                           required>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary btn-sm" style="background-color: #8C2D2D; width: 100%;">
+                                        Confirmar e Enviar a Todos de <span th:text="${regiao.nomeRegiao}">Região</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </details>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cadastro de Nova Região -->
+        <details style="margin-top: 1.25rem; border-top: 1px solid #E2E8F0; padding-top: 1rem;">
+            <summary style="cursor: pointer; font-weight: 700; color: #0B57D0;">
+                + Cadastrar Nova Região de Risco
+            </summary>
+            <form th:action="@{/dashboard/regioes}" th:object="${novaRegiaoForm}" method="post" style="margin-top: 1rem;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nome da Região</label>
+                        <input type="text" th:field="*{nomeRegiao}" class="form-control" placeholder="Ex.: Jardim Pantanal" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bairro / Subprefeitura</label>
+                        <input type="text" th:field="*{bairro}" class="form-control" placeholder="Ex.: São Miguel Paulista" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Latitude</label>
+                        <input type="number" step="0.000001" th:field="*{latitude}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Longitude</label>
+                        <input type="number" step="0.000001" th:field="*{longitude}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Limite Pluviométrico (mm)</label>
+                        <input type="number" step="0.01" th:field="*{limiteChuvaMm}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nível de Risco</label>
+                        <select th:field="*{nivelRisco}" class="form-control" required>
+                            <option th:each="nr : ${niveisRisco}" th:value="${nr}" th:text="${nr}">ALTO</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Salvar Região</button>
+            </form>
+        </details>
+    </section>
+
+    <!-- Seção 2: Histórico de Leituras Pluviométricas -->
+    <section class="card">
+        <h2 class="card-title">Histórico Recente de Leituras Pluviométricas</h2>
+        <p class="card-subtitle">
+            Leituras registradas pela API Open-Meteo e simulações climáticas.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Data / Hora</th>
+                    <th>Região / Bairro</th>
+                    <th>Precipitação</th>
+                    <th>Intensidade</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(historicoChuvas)}">
+                    <td colspan="5" style="text-align: center; color: #64748B;">Nenhuma medição registrada até o momento.</td>
+                </tr>
+                <tr th:each="chuva : ${historicoChuvas}">
+                    <td th:text="${chuva.idChuva}">1</td>
+                    <td th:text="${chuva.dataMedicao != null ? #temporals.format(chuva.dataMedicao, 'dd/MM/yyyy HH:mm:ss') : '-'}">12/11/2026 15:00</td>
+                    <td>
+                        <strong th:text="${chuva.nomeRegiao}">Jardim Pantanal</strong>
+                        <span style="color: #64748B; font-size: 0.82rem;" th:text="${'(' + chuva.bairroRegiao + ')'}"></span>
+                    </td>
+                    <td><strong th:text="${chuva.precipitacaoMm + ' mm'}">12.50 mm</strong></td>
+                    <td><span class="tag tag-blue" th:text="${chuva.intensidade}">MODERADA</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+</body>
+</html>

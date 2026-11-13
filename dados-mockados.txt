@@ -1,0 +1,140 @@
+================================================================================
+          WEATHER BUDDY (TIME HIDRO-ALERTA) — DADOS MOCKADOS (SEEDS)
+================================================================================
+Controlado em: presentation/src/main/resources/application.yml -> db-env: true (ou on / 1)
+Classe Java:   br.com.fiap.hidroalerta.presentation.config.MockDataInitializer
+
+--------------------------------------------------------------------------------
+1. RESPONSÁVEIS COMUNITÁRIOS (LOGIN EM: http://localhost:8080/login)
+--------------------------------------------------------------------------------
+[Responsável 1]
+- ID:           1
+- Nome:         Operador Defesa Civil
+- E-mail:       operador@hidroalerta.com.br
+- Senha:        admin123
+- Cargo:        Coordenador Comunitário
+- Status:       ATIVO (S)
+- Perfil:       ROLE_RESPONSAVEL (Acesso ao /dashboard)
+
+[Responsável 2]
+- ID:           2
+- Nome:         Maria Coordenadora
+- E-mail:       maria@defesacivil.sp.gov.br
+- Senha:        admin123
+- Cargo:        Agente de Campo
+- Status:       ATIVO (S)
+- Perfil:       ROLE_RESPONSAVEL (Acesso ao /dashboard)
+
+
+--------------------------------------------------------------------------------
+2. REGIÕES DE RISCO MONITORADAS (TB_REGIAO)
+--------------------------------------------------------------------------------
+[Região 1] - Cenário Piloto Crítico
+- ID:                 1
+- Nome da Região:     Jardim Pantanal
+- Bairro:             São Miguel Paulista - Zona Leste SP
+- Coordenadas (Lat):  -23.485600
+- Coordenadas (Lon):  -46.418200
+- Limiar Pluviômetro: 25.00 mm
+- Grau de Risco:      CRITICO
+
+[Região 2] - Alto Risco de Inundação
+- ID:                 2
+- Nome da Região:     Centro Franco da Rocha
+- Bairro:             Bacia do Rio Juquery - Franco da Rocha
+- Coordenadas (Lat):  -23.321700
+- Coordenadas (Lon):  -46.726900
+- Limiar Pluviômetro: 30.00 mm
+- Grau de Risco:      ALTO
+
+[Região 3] - Várzea Fluvial
+- ID:                 3
+- Nome da Região:     Várzea de Jandira
+- Bairro:             Centro - Jandira
+- Coordenadas (Lat):  -23.527500
+- Coordenadas (Lon):  -46.902800
+- Limiar Pluviômetro: 28.00 mm
+- Grau de Risco:      ALTO
+
+[Região 4] - Bacia Urbana
+- ID:                 4
+- Nome da Região:     Jardim Belval
+- Bairro:             Barueri
+- Coordenadas (Lat):  -23.511400
+- Coordenadas (Lon):  -46.876100
+- Limiar Pluviômetro: 35.00 mm
+- Grau de Risco:      MODERADO
+
+
+--------------------------------------------------------------------------------
+3. MORADORES INSCRITOS PARA ALERTAS (TB_INSCRITO)
+--------------------------------------------------------------------------------
+[Morador 1]
+- ID:         1
+- Nome:       João da Silva
+- Telefone:   (11) 98765-4321
+- Região:     Jardim Pantanal (ID: 1)
+- Status:     ATIVO (S)
+
+[Morador 2]
+- ID:         2
+- Nome:       Ana Clara Souza
+- Telefone:   (11) 99876-5432
+- Região:     Jardim Pantanal (ID: 1)
+- Status:     ATIVO (S)
+
+[Morador 3]
+- ID:         3
+- Nome:       Carlos Eduardo Santos
+- Telefone:   (11) 97654-3210
+- Região:     Centro Franco da Rocha (ID: 2)
+- Status:     ATIVO (S)
+
+
+--------------------------------------------------------------------------------
+4. HISTÓRICO DE LEITURAS PLUVIOMÉTRICAS (TB_HISTORICO_CHUVA)
+--------------------------------------------------------------------------------
+[Leitura 1]
+- ID:           1
+- Região:       Jardim Pantanal (ID: 1)
+- Precipitação: 12.50 mm
+- Intensidade:  MODERADA
+- Momento:      4 horas atrás
+
+[Leitura 2]
+- ID:           2
+- Região:       Jardim Pantanal (ID: 1)
+- Precipitação: 32.80 mm (ultrapassou o limiar de 25.00 mm — já confirmado)
+- Intensidade:  FORTE
+- Momento:      2 horas atrás
+
+[Leitura 3]
+- ID:           3
+- Região:       Centro Franco da Rocha (ID: 2)
+- Precipitação: 36.50 mm (ultrapassou o limiar de 30.00 mm — AGUARDANDO CONFIRMAÇÃO MANUAL)
+- Intensidade:  FORTE
+- Momento:      20 minutos atrás
+
+
+--------------------------------------------------------------------------------
+5. HISTÓRICO DE MENSAGENS / ALERTAS DISPARADOS (TB_HISTORICO_MENSAGEM)
+--------------------------------------------------------------------------------
+[Alerta 1]
+- ID:           1
+- Região:       Jardim Pantanal (ID: 1)
+- Responsável:  Operador Defesa Civil (ID: 1)
+- Severidade:   ALERTA
+- Conteúdo:     [WEATHER BUDDY | ALERTA] Jardim Pantanal: Precipitação de 32.80 mm atingiu o limite de segurança (25.00 mm). Risco CRITICO de alagamento.
+- Moradores:    2 notificados com sucesso
+- Momento:      1 hora atrás
+
+================================================================================
+TELAS DO SISTEMA:
+- Cadastro Cidadão (Público):             http://localhost:8080/
+- Login Operacional:                      http://localhost:8080/login
+- 1. Monitoramento & Regiões:             http://localhost:8080/dashboard
+- 2. Gerenciar Números Cadastrados:       http://localhost:8080/dashboard/numeros
+- 3. Gerenciar Contas do Sistema:         http://localhost:8080/dashboard/contas
+- 4. Testar Envios & Confirmar Alertas:   http://localhost:8080/dashboard/envios
+- Swagger UI API:                         http://localhost:8080/swagger-ui.html
+================================================================================
